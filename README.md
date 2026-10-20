@@ -14,9 +14,11 @@
 L'examen du 1er Dan comporte une épreuve théorique sous forme de questionnaire à choix multiples (QCM) évaluant la culture marciale, le lexique coréen et la réglementation sportive. 
 
 **TaegeuKizz** offre une solution simple, rapide et accessible partout (sans connexion Internet requise) pour s'entraîner efficacement :
-- **Entraînement en conditions réelles** : Tirage aléatoire de **15 questions** parmi une banque complète de 120 questions.
-- **Répartition équilibrée** : Couverture bilatérale conforme aux exigences du passage de grade (Bloc Arbitrage / Réglementation & Bloc Culture / Terminus).
-- **Évaluation immédiate** : Calcul automatique de la note globale sur **30 points** (seuil d'admissibilité à 15/30).
+- **Choix des modes d'entraînement** :
+  - ⚡ **Mode Express (10 questions)** : Idéal pour une révision rapide (Score sur 20 points, minimum requis : 10/20).
+  - 🎓 **Mode Examen (30 questions)** : En conditions d'examen (Score sur 60 points, minimum requis : 30/60).
+- **Filtrage par thèmes** : Sélection personnalisée des chapitres à réviser.
+- **Évaluation immédiate** : Calcul automatique de la note globale et affichage du nombre exact de réponses correctes.
 - **Correction détaillée et explications** : Récapitulatif interactif à la fin de chaque session indiquant les réponses correctes/incorrectes ainsi qu'une explication pédagogique pour chaque erreur.
 
 ---

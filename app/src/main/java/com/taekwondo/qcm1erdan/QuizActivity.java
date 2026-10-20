@@ -43,7 +43,6 @@ public class QuizActivity extends AppCompatActivity {
     private List<Question> quizQuestions;
     private int[] userAnswers;
     private int currentQuestionIndex = 0;
-    private int scorePoints = 0;
 
     private TextToSpeech textToSpeech;
     private SpeechRecognizer speechRecognizer;
@@ -122,11 +121,6 @@ public class QuizActivity extends AppCompatActivity {
             else if (selectedId == R.id.optionD) selectedIndex = 3;
 
             userAnswers[currentQuestionIndex] = selectedIndex;
-
-            Question currentQ = quizQuestions.get(currentQuestionIndex);
-            if (selectedIndex == currentQ.getIndexReponseCorrecte()) {
-                scorePoints += 2;
-            }
 
             currentQuestionIndex++;
             if (currentQuestionIndex < quizQuestions.size()) {
@@ -394,8 +388,15 @@ public class QuizActivity extends AppCompatActivity {
         if (textToSpeech != null) textToSpeech.stop();
         if (speechRecognizer != null) speechRecognizer.stopListening();
 
+        int calculatedScore = 0;
+        for (int i = 0; i < quizQuestions.size(); i++) {
+            if (userAnswers[i] == quizQuestions.get(i).getIndexReponseCorrecte()) {
+                calculatedScore += 2;
+            }
+        }
+
         Intent intent = new Intent(QuizActivity.this, ResultActivity.class);
-        intent.putExtra("SCORE", scorePoints);
+        intent.putExtra("SCORE", calculatedScore);
         intent.putExtra("QUESTION_COUNT", quizQuestions.size());
         intent.putExtra("TOTAL_POINTS", quizQuestions.size() * 2);
         intent.putExtra("ELAPSED_TIME_MS", elapsedMs);

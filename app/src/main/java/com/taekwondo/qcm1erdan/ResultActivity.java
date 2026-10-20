@@ -19,44 +19,105 @@ import java.util.Locale;
 public class ResultActivity extends AppCompatActivity {
 
     private TextToSpeech textToSpeech;
+    private MaterialButton btnVocalMode;
+    private boolean isVocalMode = false;
+    private boolean isTtsInitialized = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
 
+        MaterialCardView cardScoreHeader = findViewById(R.id.cardScoreHeader);
         TextView textScore = findViewById(R.id.textScore);
         TextView textTime = findViewById(R.id.textTime);
         TextView textStatus = findViewById(R.id.textStatus);
+        btnVocalMode = findViewById(R.id.btnVocalMode);
         Button btnRetry = findViewById(R.id.btnRetry);
         MaterialButton btnHome = findViewById(R.id.btnHome);
         LinearLayout layoutQuestionsContainer = findViewById(R.id.layoutQuestionsContainer);
 
-        int score = getIntent().getIntExtra("SCORE", 0);
+        ArrayList<Question> questions = (ArrayList<Question>) getIntent().getSerializableExtra("QUESTIONS");
+        int[] userAnswers = getIntent().getIntArrayExtra("USER_ANSWERS");
+
         int questionCount = getIntent().getIntExtra("QUESTION_COUNT", 10);
-        int totalPoints = getIntent().getIntExtra("TOTAL_POINTS", questionCount * 2);
+        if (questions != null && !questions.isEmpty()) {
+            questionCount = questions.size();
+        }
+
+        int correctCount = 0;
+        if (questions != null && userAnswers != null && questions.size() == userAnswers.length) {
+            for (int i = 0; i < questions.size(); i++) {
+                if (userAnswers[i] == questions.get(i).getIndexReponseCorrecte()) {
+                    correctCount++;
+                }
+            }
+        }
+
+        int percentage = (questionCount > 0) ? Math.round((float) correctCount * 100f / questionCount) : 0;
+        int passingQuestions = questionCount / 2;
+
         long elapsedMs = getIntent().getLongExtra("ELAPSED_TIME_MS", 0);
-        int passingScore = totalPoints / 2;
-        boolean isVocalMode = getIntent().getBooleanExtra("IS_VOCAL_MODE", false);
+        isVocalMode = getIntent().getBooleanExtra("IS_VOCAL_MODE", false);
         ArrayList<String> selectedBlocs = getIntent().getStringArrayListExtra("SELECTED_BLOCS");
 
-        textScore.setText("Note globale : " + score + " / " + totalPoints);
+        if (isVocalMode) {
+            btnVocalMode.setText("Vocal : ON");
+            btnVocalMode.setIconResource(R.drawable.ic_mic);
+        } else {
+            btnVocalMode.setText("Mode Vocal");
+            btnVocalMode.setIconResource(R.drawable.ic_mic_off);
+        }
+
+        textScore.setText("Note globale : " + percentage + " %\n(" + correctCount + " / " + questionCount + " réponses justes)");
         textTime.setText("⏱️ Temps écoulé : " + formatElapsedTime(elapsedMs));
 
+        int correctColor = ContextCompat.getColor(this, R.color.color_correct);
+        int correctBgColor = ContextCompat.getColor(this, R.color.color_correct_bg);
+        int correctStrokeColor = ContextCompat.getColor(this, R.color.color_correct_stroke);
+
+        int incorrectColor = ContextCompat.getColor(this, R.color.color_incorrect);
+        int incorrectBgColor = ContextCompat.getColor(this, R.color.color_incorrect_bg);
+        int incorrectStrokeColor = ContextCompat.getColor(this, R.color.color_incorrect_stroke);
+
         String statusSpeech;
-        if (score >= passingScore) {
-            textStatus.setText("MODULE B VALIDÉ !\nFélicitations, vous avez la moyenne (" + score + " / " + totalPoints + ").");
-            textStatus.setTextColor(ContextCompat.getColor(this, R.color.color_correct));
-            statusSpeech = "Module B validé ! Félicitations, vous avez au moins 50 pourcent.";
+        if (percentage >= 50) {
+            cardScoreHeader.setCardBackgroundColor(correctBgColor);
+            cardScoreHeader.setStrokeColor(correctStrokeColor);
+            textStatus.setText("MODULE B VALIDÉ !\nFélicitations, vous avez la moyenne (" + correctCount + " / " + questionCount + " - " + percentage + "%).");
+            textStatus.setTextColor(correctColor);
+            statusSpeech = "Module B validé ! Félicitations, vous avez obtenu " + percentage + " pourcent avec " + correctCount + " réponses justes sur " + questionCount + ".";
         } else {
-            textStatus.setText("MODULE B NON VALIDÉ\n(Minimum requis : " + passingScore + " / " + totalPoints + " - 50%)");
-            textStatus.setTextColor(ContextCompat.getColor(this, R.color.color_incorrect));
-            statusSpeech = "Module B non validé. Minimum requis : " + passingScore + " points sur " + totalPoints + ".";
+            cardScoreHeader.setCardBackgroundColor(incorrectBgColor);
+            cardScoreHeader.setStrokeColor(incorrectStrokeColor);
+            textStatus.setText("MODULE B NON VALIDÉ\n(Minimum requis : " + passingQuestions + " / " + questionCount + " - 50%)");
+            textStatus.setTextColor(incorrectColor);
+            statusSpeech = "Module B non validé. Vous avez " + percentage + " pourcent avec " + correctCount + " réponses justes sur " + questionCount + ". Minimum requis : 50 pourcent.";
         }
+
+        final int finalQuestionCount = questionCount;
+        final String finalStatusSpeech = statusSpeech;
+
+        btnVocalMode.setOnClickListener(v -> {
+            if (!isVocalMode) {
+                isVocalMode = true;
+                btnVocalMode.setText("Vocal : ON");
+                btnVocalMode.setIconResource(R.drawable.ic_mic);
+                speakResults(questions, userAnswers, elapsedMs, finalStatusSpeech);
+            } else {
+                isVocalMode = false;
+                btnVocalMode.setText("Mode Vocal");
+                btnVocalMode.setIconResource(R.drawable.ic_mic_off);
+                if (textToSpeech != null) {
+                    textToSpeech.stop();
+                }
+            }
+        });
 
         btnRetry.setOnClickListener(v -> {
             Intent intent = new Intent(ResultActivity.this, QuizActivity.class);
-            intent.putExtra("QUESTION_COUNT", questionCount);
+            intent.putExtra("QUESTION_COUNT", finalQuestionCount);
+            intent.putExtra("IS_VOCAL_MODE", isVocalMode);
             if (selectedBlocs != null) {
                 intent.putStringArrayListExtra("SELECTED_BLOCS", selectedBlocs);
             }
@@ -71,25 +132,39 @@ public class ResultActivity extends AppCompatActivity {
             finish();
         });
 
-        ArrayList<Question> questions = (ArrayList<Question>) getIntent().getSerializableExtra("QUESTIONS");
-        int[] userAnswers = getIntent().getIntArrayExtra("USER_ANSWERS");
-
         if (questions != null && userAnswers != null && questions.size() == userAnswers.length) {
             displayQuestionResults(layoutQuestionsContainer, questions, userAnswers);
         }
 
         if (isVocalMode) {
+            speakResults(questions, userAnswers, elapsedMs, finalStatusSpeech);
+        }
+    }
+
+    private void speakResults(ArrayList<Question> questions, int[] userAnswers, long elapsedMs, String statusSpeech) {
+        if (textToSpeech == null) {
             textToSpeech = new TextToSpeech(this, status -> {
                 if (status == TextToSpeech.SUCCESS) {
                     textToSpeech.setLanguage(Locale.FRENCH);
-                    String speech = "Quiz terminé en " + formatElapsedTimeForSpeech(elapsedMs) + ". Votre note globale est de " + score + " sur " + totalPoints + ". " + statusSpeech;
-                    textToSpeech.speak(speech, TextToSpeech.QUEUE_FLUSH, null, "RESULT_SUMMARY_UTTERANCE");
-
-                    if (questions != null && userAnswers != null) {
-                        speakWrongAnswersAnalysis(questions, userAnswers);
+                    isTtsInitialized = true;
+                    if (isVocalMode) {
+                        playSpeechContent(questions, userAnswers, elapsedMs, statusSpeech);
                     }
                 }
             });
+        } else if (isTtsInitialized) {
+            playSpeechContent(questions, userAnswers, elapsedMs, statusSpeech);
+        }
+    }
+
+    private void playSpeechContent(ArrayList<Question> questions, int[] userAnswers, long elapsedMs, String statusSpeech) {
+        if (textToSpeech == null || !isVocalMode) return;
+        textToSpeech.stop();
+        String speech = "Quiz terminé en " + formatElapsedTimeForSpeech(elapsedMs) + ". " + statusSpeech;
+        textToSpeech.speak(speech, TextToSpeech.QUEUE_FLUSH, null, "RESULT_SUMMARY_UTTERANCE");
+
+        if (questions != null && userAnswers != null) {
+            speakWrongAnswersAnalysis(questions, userAnswers);
         }
     }
 

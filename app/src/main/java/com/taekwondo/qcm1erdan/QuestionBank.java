@@ -66,12 +66,34 @@ public class QuestionBank {
                     filteredList.add(q);
                 }
             }
-        } else {
-            filteredList = fullList;
         }
 
-        Collections.shuffle(filteredList);
-        return filteredList.subList(0, Math.min(count, filteredList.size()));
+        if (filteredList.isEmpty()) {
+            filteredList = new ArrayList<>(fullList);
+        }
+
+        List<Question> result = new ArrayList<>();
+        List<Question> pool = new ArrayList<>(filteredList);
+        Collections.shuffle(pool);
+
+        while (result.size() < count) {
+            if (pool.isEmpty()) {
+                pool.addAll(filteredList);
+                Collections.shuffle(pool);
+            }
+            int needed = count - result.size();
+            if (pool.size() <= needed) {
+                result.addAll(pool);
+                pool.clear();
+            } else {
+                result.addAll(pool.subList(0, needed));
+                List<Question> remaining = new ArrayList<>(pool.subList(needed, pool.size()));
+                pool.clear();
+                pool.addAll(remaining);
+            }
+        }
+
+        return result;
     }
 
     public static List<Question> getRandomQuiz(Context context, int count) {
