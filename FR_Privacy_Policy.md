@@ -1,12 +1,12 @@
-# Politique de Confidentialité — QCM 1er Dan Taekwondo
+# Politique de Confidentialité — TaegeuKizz
 
 **Dernière mise à jour :** 4 octobre 2026
 
-La présente Politique de Confidentialité s'applique à l'application mobile **QCM 1er Dan Taekwondo** (ci-après « l'Application »). Nous accordons une grande importance à la protection de vos données personnelles et au respect de votre vie privée.
+La présente Politique de Confidentialité s'applique à l'application mobile **TaegeuKizz** (ci-après « l'Application »). Nous accordons une grande importance à la protection de vos données personnelles et au respect de votre vie privée.
 
 ## 1. Collecte et Utilisation des Données
 
-L'Application **QCM 1er Dan Taekwondo** a été conçue pour fonctionner de manière autonome et respectueuse de la vie privée :
+L'Application **TaegeuKizz** a été conçue pour fonctionner de manière autonome et respectueuse de la vie privée :
 
 * **Aucune donnée personnelle collectée :** L'Application ne nécessite aucune création de compte, ni saisie d'informations personnelles (nom, adresse e-mail, numéro de téléphone, etc.).
 

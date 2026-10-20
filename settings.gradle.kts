@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "QCM 1er Dan Taekwondo"
+rootProject.name = "TaegeuKizz"
 include(":app")
